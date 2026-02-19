@@ -1,0 +1,5 @@
+{
+  "name": "CosmicScroll",
+  "description": "A scroll-driven 3D journey through the solar system using React, Three.js, GSAP, and Gemini API for dynamic planetary data.",
+  "requestFramePermissions": []
+}
