@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useLayoutEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Scene, { PLANET_DATA } from './components/Scene';
 import { SECTIONS } from './constants';
 import { generatePlanetFact } from './services/geminiService';
 
+gsap.registerPlugin(ScrollTrigger);
+
 const App: React.FC = () => {
   const [activeFact, setActiveFact] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const sectionsRef = useRef<(HTMLElement | null)[]>([]);
 
   const handleGeminiAsk = async (planetName: string) => {
     setLoading(true);
@@ -15,6 +20,35 @@ const App: React.FC = () => {
     setActiveFact(fact);
     setLoading(false);
   };
+
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+      sectionsRef.current.forEach((section) => {
+        if (!section) return;
+        
+        const wrapper = section.querySelector('.parallax-wrapper');
+        
+        if (wrapper) {
+          gsap.fromTo(wrapper, 
+            { y: 100, opacity: 0 }, 
+            {
+              y: -100,
+              opacity: 1,
+              ease: "none",
+              scrollTrigger: {
+                trigger: section,
+                start: "top bottom",
+                end: "center center",
+                scrub: 1.5,
+              }
+            }
+          );
+        }
+      });
+    });
+    
+    return () => ctx.revert();
+  }, []);
 
   return (
     <div className="relative w-full bg-black text-white">
@@ -42,39 +76,44 @@ const App: React.FC = () => {
         </section>
 
         {/* Planet Sections */}
-        {SECTIONS.map((section) => (
+        {SECTIONS.map((section, index) => (
           <section 
             key={section.id} 
+            ref={(el) => { sectionsRef.current[index] = el }}
             className="h-[150vh] flex items-center justify-start px-8 md:px-24 pointer-events-none"
           >
-            <div className="pointer-events-auto max-w-md bg-black/60 backdrop-blur-md p-8 rounded-2xl border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.1)] transform transition-all hover:scale-105">
-              <h2 className="text-4xl font-bold mb-2 text-white">{section.title}</h2>
-              <p className="text-xl text-blue-300 mb-4">{section.subtitle}</p>
-              <p className="text-gray-300 mb-6 leading-relaxed">
-                {PLANET_DATA[section.planetIndex].description}
-              </p>
-              
-              <div className="border-t border-gray-700 pt-4">
-                <button
-                  onClick={() => handleGeminiAsk(section.title)}
-                  disabled={loading}
-                  className="group flex items-center gap-2 text-sm font-semibold text-purple-400 hover:text-purple-300 transition-colors"
-                >
-                  {loading ? (
-                    <span className="animate-pulse">Consulting AI...</span>
-                  ) : (
-                    <>
-                      <span>Ask Gemini AI a Fact</span>
-                      <span className="group-hover:translate-x-1 transition-transform">→</span>
-                    </>
-                  )}
-                </button>
+            {/* Wrapper for Parallax GSAP Animation */}
+            <div className="parallax-wrapper">
+              {/* Inner Card for Content & CSS Hover Effects */}
+              <div className="pointer-events-auto max-w-md bg-black/60 backdrop-blur-md p-8 rounded-2xl border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.1)] transform transition-transform duration-300 hover:scale-105">
+                <h2 className="text-4xl font-bold mb-2 text-white">{section.title}</h2>
+                <p className="text-xl text-blue-300 mb-4">{section.subtitle}</p>
+                <p className="text-gray-300 mb-6 leading-relaxed">
+                  {PLANET_DATA[section.planetIndex].description}
+                </p>
                 
-                {activeFact && activeFact.toLowerCase().includes(section.title.toLowerCase()) && (
-                  <div className="mt-4 p-3 bg-purple-900/30 border border-purple-500/30 rounded text-sm text-purple-100 italic animate-fadeIn">
-                    "{activeFact}"
-                  </div>
-                )}
+                <div className="border-t border-gray-700 pt-4">
+                  <button
+                    onClick={() => handleGeminiAsk(section.title)}
+                    disabled={loading}
+                    className="group flex items-center gap-2 text-sm font-semibold text-purple-400 hover:text-purple-300 transition-colors"
+                  >
+                    {loading ? (
+                      <span className="animate-pulse">Consulting AI...</span>
+                    ) : (
+                      <>
+                        <span>Ask Gemini AI a Fact</span>
+                        <span className="group-hover:translate-x-1 transition-transform">→</span>
+                      </>
+                    )}
+                  </button>
+                  
+                  {activeFact && activeFact.toLowerCase().includes(section.title.toLowerCase()) && (
+                    <div className="mt-4 p-3 bg-purple-900/30 border border-purple-500/30 rounded text-sm text-purple-100 italic animate-fadeIn">
+                      "{activeFact}"
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </section>
