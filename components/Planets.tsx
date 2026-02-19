@@ -32,14 +32,16 @@ export const Planet: React.FC<PlanetProps> = ({ config, innerRef, pivotRef }) =>
         <sphereGeometry args={[1, 64, 64]} />
         <meshStandardMaterial 
           color={config.color} 
-          roughness={0.7}
-          metalness={0.2}
+          roughness={0.4}
+          metalness={0.3}
+          emissive={config.color}
+          emissiveIntensity={0.3}
         />
       </mesh>
-      {/* Orbit Ring visual aid (optional) */}
+      {/* Orbit Ring visual aid */}
       <mesh rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[config.positionX - 0.1, config.positionX + 0.1, 128]} />
-        <meshBasicMaterial color="#ffffff" opacity={0.1} transparent side={2} />
+        <ringGeometry args={[config.positionX - 0.15, config.positionX + 0.15, 128]} />
+        <meshBasicMaterial color={config.color} opacity={0.3} transparent side={2} />
       </mesh>
     </group>
   );
@@ -58,10 +60,11 @@ export const Sun: React.FC = () => {
     <group>
       <mesh ref={ref} scale={[5, 5, 5]}>
         <sphereGeometry args={[1, 64, 64]} />
-        <meshBasicMaterial color="#FFD700" />
+        <meshBasicMaterial color="#FFD700" toneMapped={false} />
       </mesh>
-      <pointLight intensity={2} distance={300} decay={1} color="#ffffff" />
-      <ambientLight intensity={0.2} />
+      {/* High intensity point light to reach far planets */}
+      <pointLight intensity={1000} distance={2000} decay={2} color="#ffffff" />
+      <ambientLight intensity={0.5} />
     </group>
   );
 };

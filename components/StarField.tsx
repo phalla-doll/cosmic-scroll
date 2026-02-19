@@ -1,18 +1,16 @@
 import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Points, PointMaterial } from '@react-three/drei';
-import * as random from 'three/examples/jsm/utils/BufferGeometryUtils.js'; // Note: In a real env, we'd generate random numbers manually or use a library, but let's implement a simple generator
-import { Vector3 } from 'three';
 
 const StarField: React.FC = () => {
   const ref = useRef<any>();
   
   const sphere = useMemo(() => {
-    const temp = new Float32Array(5000 * 3);
-    for (let i = 0; i < 5000; i++) {
-        const x = (Math.random() - 0.5) * 800;
-        const y = (Math.random() - 0.5) * 800;
-        const z = (Math.random() - 0.5) * 800;
+    const temp = new Float32Array(6000 * 3);
+    for (let i = 0; i < 6000; i++) {
+        const x = (Math.random() - 0.5) * 1000;
+        const y = (Math.random() - 0.5) * 1000;
+        const z = (Math.random() - 0.5) * 1000;
         temp[i * 3] = x;
         temp[i * 3 + 1] = y;
         temp[i * 3 + 2] = z;
@@ -22,8 +20,8 @@ const StarField: React.FC = () => {
 
   useFrame((state, delta) => {
     if(ref.current) {
-        ref.current.rotation.x -= delta / 15;
-        ref.current.rotation.y -= delta / 20;
+        ref.current.rotation.x -= delta / 20;
+        ref.current.rotation.y -= delta / 25;
     }
   });
 
@@ -33,9 +31,10 @@ const StarField: React.FC = () => {
         <PointMaterial
           transparent
           color="#ffffff"
-          size={0.5}
+          size={1.2}
           sizeAttenuation={true}
           depthWrite={false}
+          opacity={0.8}
         />
       </Points>
     </group>
